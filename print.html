@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Closer Tonight — Printable Deck</title>
+<script src="cards.js"></script>
+<style>
+  @page { size: letter portrait; margin: 0.4in; }
+  :root {
+    --spark: #e8a87c;
+    --connect: #c47a7a;
+    --closer: #8b4456;
+    --wild: #d4a574;
+    --overlay: #9b8aa6;
+    --hard: #5b7a7a;
+    --card-bg: #f7f1e8;
+    --card-ink: #2a1f24;
+    --card-ink-soft: #6a5862;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    margin: 0;
+    background: #f3ebe2;
+    color: #2a1f24;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .controls {
+    position: sticky;
+    top: 0;
+    background: #1c1216;
+    color: #f7f1e8;
+    padding: 14px 24px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    z-index: 100;
+    font-family: system-ui, -apple-system, sans-serif;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+  .controls h1 {
+    margin: 0;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 20px;
+    font-weight: 500;
+  }
+  .controls button {
+    background: #f7f1e8;
+    color: #1c1216;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: system-ui, sans-serif;
+  }
+  .controls button:hover { background: #fff; }
+  .controls .hint {
+    font-size: 12px;
+    color: #c8b8b0;
+    font-style: italic;
+  }
+  .controls label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+  }
+  .controls input[type="checkbox"] { transform: scale(1.1); }
+
+  main { padding: 24px; max-width: 8.5in; margin: 0 auto; }
+
+  .section-title {
+    grid-column: 1 / -1;
+    page-break-before: always;
+    break-before: page;
+    text-align: center;
+    margin: 12px 0 16px;
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .section-title:first-child { page-break-before: auto; break-before: auto; }
+  .section-title .accent {
+    display: inline-block;
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    margin: 8px auto 0;
+  }
+
+  /* Grid of cards: 3 columns x 3 rows = 9 per page, business-card sized */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.18in;
+    page-break-inside: auto;
+  }
+  .card {
+    aspect-ratio: 2.5 / 3.5;
+    background: var(--card-bg);
+    border: 1px solid #d8c8c0;
+    border-radius: 12px;
+    padding: 14px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--accent);
+  }
+  .card .kind {
+    font-family: system-ui, sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--card-ink-soft);
+  }
+  .card .kind::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+  .card .text {
+    font-size: 12.5px;
+    line-height: 1.32;
+    color: var(--card-ink);
+    flex: 1;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 8px 0;
+    hyphens: auto;
+  }
+  .card .footer {
+    font-family: system-ui, sans-serif;
+    font-size: 7.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--card-ink-soft);
+    text-align: center;
+  }
+
+  .card.spark   { --accent: var(--spark); }
+  .card.connect { --accent: var(--connect); }
+  .card.closer  { --accent: var(--closer); }
+  .card.wild    { --accent: var(--wild); }
+  .card.overlay { --accent: var(--overlay); }
+
+  /* Print-only: hide controls */
+  @media print {
+    .controls { display: none; }
+    main { padding: 0; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+<div class="controls">
+  <h1>Closer Tonight — Printable Deck</h1>
+  <button onclick="window.print()">Print / Save as PDF</button>
+  <span class="hint">Cardstock recommended. 9 cards per page, ~2.5" × 3.5" each.</span>
+</div>
+
+<main id="deckRoot"></main>
+
+<script>
+  const root = document.getElementById('deckRoot');
+
+  function renderSection(title, levelClass, cards) {
+    const head = document.createElement('div');
+    head.className = 'section-title';
+    head.style.setProperty('--accent', `var(--${levelClass})`);
+    head.innerHTML = `${title}<br><span class="accent" style="background: var(--${levelClass})"></span>`;
+    root.appendChild(head);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    cards.forEach(c => {
+      const el = document.createElement('div');
+      el.className = `card ${levelClass}`;
+      const kind = kindLabel(c);
+      el.innerHTML = `
+        <div class="kind">${kind}</div>
+        <div class="text">${escapeHtml(c.text)}</div>
+        <div class="footer">CLOSER TONIGHT · ${title.toUpperCase()}</div>
+      `;
+      grid.appendChild(el);
+    });
+    root.appendChild(grid);
+  }
+
+  function kindLabel(c) {
+    if (c.type === 'wild') return 'Wildcard';
+    if (c.type === 'overlay') return 'Overlay';
+    if (c.type === 'reveal') return 'Write & Reveal';
+    if (c.type === 'activity') return 'Activity';
+    if (c.type === 'touch') return 'Touch';
+    return 'Question';
+  }
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  renderSection('Spark',   'spark',   DECK.spark);
+  renderSection('Connect', 'connect', DECK.connect);
+  renderSection('Closer',  'closer',  DECK.closer);
+  renderSection('Wildcards', 'wild', DECK.wild);
+  renderSection('Overlays', 'overlay', DECK.overlay);
+</script>
+</body>
+</html>

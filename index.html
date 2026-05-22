@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1c1216">
+<title>Closer Tonight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="cards.js"></script>
+<style>
+  :root {
+    --bg: #1c1216;
+    --bg-soft: #271820;
+    --card: #f7f1e8;
+    --card-ink: #2a1f24;
+    --card-ink-soft: #5a4a52;
+    --ui-fg: #e6d7d0;
+    --ui-fg-dim: #9c8a87;
+    --spark: #e8a87c;
+    --connect: #c47a7a;
+    --closer: #8b4456;
+    --wild: #d4a574;
+    --overlay: #9b8aa6;
+    --hard: #5b7a7a;
+    --shadow: 0 20px 60px rgba(0,0,0,0.5);
+    --radius: 22px;
+    --ease: cubic-bezier(.2,.7,.2,1);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; overscroll-behavior: none; }
+  body {
+    background: radial-gradient(ellipse at top, var(--bg-soft) 0%, var(--bg) 60%);
+    color: var(--ui-fg);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 16px; line-height: 1.5;
+    min-height: 100dvh;
+    display: flex; flex-direction: column;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; min-height: 56px; }
+  .topbar .left, .topbar .right { display: flex; align-items: center; gap: 12px; }
+  .level-pill { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; padding: 6px 14px; border-radius: 999px; border: 1px solid currentColor; color: var(--ui-fg-dim); }
+  .level-pill.spark { color: var(--spark); }
+  .level-pill.connect { color: var(--connect); }
+  .level-pill.closer { color: var(--closer); }
+  .level-pill.hard { color: var(--hard); }
+  .iconbtn { background: none; border: none; color: var(--ui-fg); width: 44px; height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 200ms var(--ease); }
+  .iconbtn:hover, .iconbtn:focus-visible { background: rgba(255,255,255,0.06); }
+  .iconbtn:focus-visible { outline: 2px solid var(--spark); outline-offset: 2px; }
+  .iconbtn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 20px 24px; position: relative; }
+
+  .home { width: 100%; max-width: 480px; text-align: center; }
+  .home h1 { font-family: 'Lora', Georgia, serif; font-weight: 600; font-size: clamp(40px, 9vw, 56px); line-height: 1.05; margin: 8px 0 8px; letter-spacing: 0.01em; }
+  .home .tag { font-family: 'Lora', Georgia, serif; font-style: italic; font-size: 17px; color: var(--ui-fg-dim); margin: 0 0 40px; }
+  .level-stack { display: flex; flex-direction: column; gap: 14px; }
+  .level-btn { appearance: none; border: none; cursor: pointer; width: 100%; min-height: 76px; padding: 18px 22px; border-radius: var(--radius); background: rgba(255,255,255,0.04); color: var(--ui-fg); text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 16px; transition: background-color 200ms var(--ease), box-shadow 200ms var(--ease); position: relative; overflow: hidden; }
+  .level-btn::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--accent); }
+  .level-btn:hover, .level-btn:focus-visible { background: rgba(255,255,255,0.07); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .level-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .level-btn.spark { --accent: var(--spark); }
+  .level-btn.connect { --accent: var(--connect); }
+  .level-btn.closer { --accent: var(--closer); }
+  .level-btn.hard { --accent: var(--hard); }
+  .level-btn .name { font-family: 'Lora', Georgia, serif; font-size: 26px; font-weight: 600; color: var(--accent); line-height: 1.1; }
+  .level-btn .blurb { font-size: 13px; color: var(--ui-fg-dim); margin-top: 4px; line-height: 1.4; }
+  .level-btn .arrow { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--accent); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; }
+  .level-btn .arrow svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .home .footer-note { margin-top: 32px; font-size: 12px; color: var(--ui-fg-dim); font-style: italic; }
+
+  .card-stage { width: 100%; max-width: 520px; flex: 1; display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 28px; }
+  .card { background: var(--card); color: var(--card-ink); border-radius: var(--radius); padding: 38px 28px; min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: var(--shadow); position: relative; cursor: pointer; user-select: none; transition: transform 280ms var(--ease), opacity 280ms var(--ease); }
+  .card::before { content: ''; position: absolute; inset: 8px; border-radius: calc(var(--radius) - 6px); border: 1px solid rgba(0,0,0,0.07); pointer-events: none; }
+  .card.enter { opacity: 0; transform: translateY(12px) scale(0.98); }
+  .card.exit { opacity: 0; transform: translateY(-12px) scale(0.98); }
+  .card-kind { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--card-ink-soft); margin-bottom: 24px; }
+  .card-kind .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--kind-tint, var(--card-ink-soft)); margin-right: 8px; vertical-align: middle; }
+  .card-text { font-family: 'Lora', Georgia, serif; font-size: clamp(24px, 6.2vw, 32px); font-weight: 500; line-height: 1.4; color: var(--card-ink); margin: 0; max-width: 30ch; }
+  .card-overlay-strip { margin-top: 24px; padding: 14px 16px; border-radius: 14px; background: rgba(155, 138, 166, 0.14); border-left: 3px solid var(--overlay); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.5; color: var(--card-ink); text-align: left; max-width: 36ch; }
+  .card-overlay-strip strong { font-weight: 700; letter-spacing: 0.14em; color: #6f5a7a; }
+  .card[data-kind="wild"] { background: #fbf3df; }
+
+  .card-controls { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0 4px; }
+  .turn { display: inline-flex; align-items: center; gap: 10px; background: none; border: 1px solid rgba(255,255,255,0.14); color: var(--ui-fg-dim); padding: 10px 16px; border-radius: 999px; font-size: 12px; font-weight: 500; letter-spacing: 0.06em; cursor: pointer; min-height: 44px; transition: background-color 200ms var(--ease), color 200ms var(--ease); }
+  .turn:hover, .turn:focus-visible { background: rgba(255,255,255,0.05); color: var(--ui-fg); }
+  .turn:focus-visible { outline: 2px solid var(--spark); outline-offset: 2px; }
+  .turn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .next { appearance: none; border: none; background: var(--ui-fg); color: var(--bg); font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; letter-spacing: 0.04em; padding: 14px 26px; border-radius: 999px; cursor: pointer; min-height: 48px; min-width: 130px; transition: transform 200ms var(--ease), background-color 200ms var(--ease); display: inline-flex; align-items: center; gap: 10px; }
+  .next:hover { background: #fff; }
+  .next:active { transform: scale(0.98); }
+  .next:focus-visible { outline: 2px solid var(--spark); outline-offset: 3px; }
+  .next svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); opacity: 0; pointer-events: none; transition: opacity 240ms var(--ease); z-index: 30; }
+  .sheet-bg.show { opacity: 1; pointer-events: auto; }
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg-soft); border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -20px 60px rgba(0,0,0,0.5); transform: translateY(100%); transition: transform 280ms var(--ease); z-index: 40; padding: 12px 20px 28px; padding-bottom: max(28px, env(safe-area-inset-bottom)); max-height: 80vh; overflow-y: auto; }
+  .sheet.show { transform: translateY(0); }
+  .sheet .grabber { width: 40px; height: 4px; background: rgba(255,255,255,0.18); border-radius: 2px; margin: 0 auto 16px; }
+  .sheet h2 { font-family: 'Lora', Georgia, serif; font-weight: 600; font-size: 22px; margin: 8px 0 14px; color: var(--ui-fg); }
+  .sheet .menu-item { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 4px; background: none; border: none; border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--ui-fg); width: 100%; cursor: pointer; text-align: left; font-size: 15px; min-height: 56px; }
+  .sheet .menu-item:last-child { border-bottom: none; }
+  .sheet .menu-item:hover { background: rgba(255,255,255,0.04); }
+  .sheet .menu-item .meta { color: var(--ui-fg-dim); font-size: 12px; font-style: italic; }
+  .sheet .menu-item .label-block { display: flex; flex-direction: column; gap: 2px; }
+  .sheet .menu-item .label { font-weight: 500; }
+  .sheet .menu-item svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; color: var(--ui-fg-dim); }
+
+  .hard-stage { width: 100%; max-width: 600px; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 28px; padding-top: 8px; }
+  .step-count { text-align: center; font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--hard); font-weight: 700; }
+  .step-title { font-family: 'Lora', Georgia, serif; font-size: clamp(28px, 6.5vw, 38px); font-weight: 600; text-align: center; line-height: 1.15; margin: 0; color: var(--ui-fg); }
+  .step-body { font-family: 'Lora', Georgia, serif; font-size: clamp(18px, 4.6vw, 22px); font-weight: 500; line-height: 1.55; color: var(--ui-fg); background: rgba(91, 122, 122, 0.10); border-left: 3px solid var(--hard); padding: 22px 22px; border-radius: 14px; }
+  .step-controls { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .step-controls .secondary { background: none; border: 1px solid rgba(255,255,255,0.14); color: var(--ui-fg-dim); padding: 12px 22px; border-radius: 999px; cursor: pointer; font-size: 14px; min-height: 44px; }
+  .step-controls .secondary:hover { background: rgba(255,255,255,0.05); color: var(--ui-fg); }
+  .step-controls .primary { background: var(--hard); color: var(--card); padding: 14px 26px; border: none; border-radius: 999px; cursor: pointer; font-size: 15px; font-weight: 600; min-height: 48px; }
+  .step-controls .primary:hover { filter: brightness(1.08); }
+  .step-progress { display: flex; gap: 6px; justify-content: center; margin: 4px 0 8px; }
+  .step-progress span { width: 18px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.10); }
+  .step-progress span.done { background: var(--hard); }
+
+  .about { max-width: 520px; padding: 4px 4px 24px; }
+  .about p { font-family: 'Lora', Georgia, serif; font-size: 19px; font-weight: 500; line-height: 1.6; color: var(--ui-fg); margin: 0 0 18px; }
+  .about .small { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--ui-fg-dim); line-height: 1.6; }
+
+  .error-banner { background: #8b3a3a; color: #fff; padding: 14px 16px; border-radius: 10px; margin: 24px 20px; font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.5; }
+
+  .hidden { display: none !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+  @media (min-width: 720px) {
+    main { padding: 24px 40px 40px; }
+    .card { padding: 56px 48px; min-height: 56vh; }
+    .topbar { padding: 20px 32px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="left">
+    <button class="iconbtn" id="homeBtn" aria-label="Back to home" type="button">
+      <svg viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5"/><path d="M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9"/></svg>
+    </button>
+    <span class="level-pill" id="levelPill"></span>
+  </div>
+  <div class="right">
+    <button class="iconbtn" id="menuBtn" aria-label="Open menu" type="button">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
+    </button>
+  </div>
+</div>
+
+<main>
+  <section class="home" id="homeView">
+    <h1>Closer Tonight</h1>
+    <p class="tag">A quiet game for two.</p>
+    <div class="level-stack">
+      <button type="button" class="level-btn spark" data-level="spark">
+        <div><div class="name">Spark</div><div class="blurb">Light. Specifics in the present. A way in.</div></div>
+        <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
+      </button>
+      <button type="button" class="level-btn connect" data-level="connect">
+        <div><div class="name">Connect</div><div class="blurb">Slower. What's true inside, named out loud.</div></div>
+        <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
+      </button>
+      <button type="button" class="level-btn closer" data-level="closer">
+        <div><div class="name">Closer</div><div class="blurb">Closer in. Bodies, breath, want.</div></div>
+        <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
+      </button>
+      <button type="button" class="level-btn hard" data-level="hard">
+        <div><div class="name">Hard Conversation</div><div class="blurb">Eight slow steps. For when you choose to go back to something old together.</div></div>
+        <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
+      </button>
+    </div>
+    <p class="footer-note">Whoever draws the card reads it. The other answers.</p>
+  </section>
+
+  <section class="card-stage hidden" id="cardView">
+    <div class="card" id="cardEl" data-kind="question" tabindex="0" role="button" aria-label="Next card">
+      <div class="card-kind"><span class="dot"></span><span id="cardKindLabel">Question</span></div>
+      <p class="card-text" id="cardText">…</p>
+      <div class="card-overlay-strip hidden" id="overlayStrip"></div>
+    </div>
+    <div class="card-controls">
+      <button type="button" class="turn" id="turnBtn" aria-label="Swap who's reading">
+        <svg viewBox="0 0 24 24"><path d="M7 7h13M20 7l-3-3M20 7l-3 3"/><path d="M17 17H4M4 17l3-3M4 17l3 3"/></svg>
+        <span id="turnLabel">Player 1 reads</span>
+      </button>
+      <button type="button" class="next" id="nextBtn">
+        Next
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <section class="hard-stage hidden" id="hardView">
+    <div class="step-progress" id="stepProgress"></div>
+    <div class="step-count" id="stepCount">Step 1 of 8</div>
+    <h2 class="step-title" id="stepTitle">…</h2>
+    <div class="step-body" id="stepBody">…</div>
+    <div class="step-controls">
+      <button type="button" class="secondary" id="stepBack">Back</button>
+      <button type="button" class="primary" id="stepNext">Next step</button>
+    </div>
+  </section>
+
+  <section class="about hidden" id="aboutView">
+    <p>Closer Tonight is a slow game. The cards aren't trying to entertain you — they're trying to give you a way in.</p>
+    <p>Whoever draws the card reads it. The other answers. Take your time. The point isn't to get to the next card.</p>
+    <p>Sometimes a Wildcard will interrupt. They change the rules for one turn. Trust them.</p>
+    <p>If something hard comes up that needs its own conversation, open the <em>Hard Conversation</em> ritual instead. Eight steps, no timer.</p>
+    <p class="small" style="margin-top: 24px">The deck remembers which cards you've drawn so it doesn't repeat. Reset from the menu.</p>
+  </section>
+
+  <div class="error-banner hidden" id="loadError">
+    Couldn't load the card deck. If you opened this file directly, try double-clicking <code>index.html</code> again (or push to GitHub Pages — see README).
+  </div>
+</main>
+
+<div class="sheet-bg" id="sheetBg" aria-hidden="true"></div>
+<div class="sheet" id="sheet" role="dialog" aria-label="Menu" aria-modal="true">
+  <div class="grabber"></div>
+  <h2>Menu</h2>
+  <button type="button" class="menu-item" data-action="home">
+    <div class="label-block"><span class="label">Home</span><span class="meta">Pick a different level</span></div>
+    <svg viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5"/><path d="M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9"/></svg>
+  </button>
+  <button type="button" class="menu-item" data-action="hard">
+    <div class="label-block"><span class="label">Hard Conversation</span><span class="meta">The eight-step ritual</span></div>
+    <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+  </button>
+  <button type="button" class="menu-item" data-action="about">
+    <div class="label-block"><span class="label">About</span><span class="meta">How to play</span></div>
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+  </button>
+  <button type="button" class="menu-item" data-action="reset">
+    <div class="label-block"><span class="label">Reshuffle decks</span><span class="meta">Start fresh on all levels</span></div>
+    <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+  </button>
+</div>
+
+<script>
+(function() {
+  const STORE_KEY = 'closer-tonight-v2';
+
+  if (typeof DECK === 'undefined') {
+    document.getElementById('loadError').classList.remove('hidden');
+    document.getElementById('homeView').classList.add('hidden');
+    return;
+  }
+
+  function defaultState() {
+    return {
+      decks: { spark:{order:[],cursor:0}, connect:{order:[],cursor:0}, closer:{order:[],cursor:0}, wild:{order:[],cursor:0}, overlay:{order:[],cursor:0} },
+      currentLevel: null, turn: 1, hardStep: 0, drawsSinceWild: 0, drawsSinceOverlay: 0
+    };
+  }
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return defaultState();
+      const parsed = JSON.parse(raw);
+      const d = defaultState();
+      return Object.assign(d, parsed, { decks: Object.assign(d.decks, parsed.decks || {}) });
+    } catch (_) { return defaultState(); }
+  }
+  function saveState() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (_) {} }
+
+  const state = loadState();
+
+  function shuffle(n) {
+    const arr = Array.from({length: n}, (_, i) => i);
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+  function ensureDeck(key) {
+    const total = (DECK[key] || []).length;
+    const d = state.decks[key];
+    if (!d.order.length || d.order.length !== total || d.cursor >= total) {
+      d.order = shuffle(total); d.cursor = 0;
+    }
+  }
+  function drawFrom(key) {
+    ensureDeck(key);
+    const d = state.decks[key];
+    const idx = d.order[d.cursor];
+    d.cursor++;
+    if (d.cursor >= d.order.length) { d.order = shuffle(DECK[key].length); d.cursor = 0; }
+    return DECK[key][idx];
+  }
+
+  const $ = id => document.getElementById(id);
+  const homeView = $('homeView'), cardView = $('cardView'), hardView = $('hardView'), aboutView = $('aboutView');
+  const levelPill = $('levelPill'), cardEl = $('cardEl'), cardText = $('cardText'), cardKindLbl = $('cardKindLabel');
+  const overlayStrip = $('overlayStrip'), turnLabel = $('turnLabel');
+
+  function setView(name) {
+    homeView.classList.add('hidden'); cardView.classList.add('hidden');
+    hardView.classList.add('hidden'); aboutView.classList.add('hidden');
+    levelPill.textContent = ''; levelPill.className = 'level-pill';
+    if (name === 'home')  homeView.classList.remove('hidden');
+    if (name === 'card')  cardView.classList.remove('hidden');
+    if (name === 'hard') { hardView.classList.remove('hidden'); levelPill.textContent = 'Hard Conversation'; levelPill.className = 'level-pill hard'; }
+    if (name === 'about'){ aboutView.classList.remove('hidden'); levelPill.textContent = 'About'; }
+  }
+
+  function goLevel(level) {
+    state.currentLevel = level;
+    state.drawsSinceWild = 0; state.drawsSinceOverlay = 0;
+    setView('card');
+    levelPill.textContent = level === 'spark' ? 'Spark' : level === 'connect' ? 'Connect' : 'Closer';
+    levelPill.className = 'level-pill ' + level;
+    drawAndRender();
+  }
+
+  function pickCard() {
+    const wildChance = state.drawsSinceWild >= 3 ? 0.18 : 0;
+    if (Math.random() < wildChance) { state.drawsSinceWild = 0; return { card: drawFrom('wild'), isWild: true }; }
+    state.drawsSinceWild++;
+    return { card: drawFrom(state.currentLevel), isWild: false };
+  }
+  function pickOverlay() {
+    const ch = state.drawsSinceOverlay >= 5 ? 0.16 : 0;
+    if (Math.random() < ch) { state.drawsSinceOverlay = 0; return drawFrom('overlay'); }
+    state.drawsSinceOverlay++;
+    return null;
+  }
+  function kindLabelFor(card, level) {
+    if (card.type === 'wild')     return 'Wildcard';
+    if (card.type === 'reveal')   return 'Write & reveal';
+    if (card.type === 'activity') return 'Activity';
+    if (level === 'spark')   return 'Spark';
+    if (level === 'connect') return 'Connect';
+    if (level === 'closer')  return 'Closer';
+    return 'Question';
+  }
+
+  let animating = false;
+  function drawAndRender() {
+    if (animating) return;
+    animating = true;
+    cardEl.classList.add('exit');
+    setTimeout(() => {
+      const { card, isWild } = pickCard();
+      const overlay = (!isWild && card.type === 'question') ? pickOverlay() : null;
+      cardEl.dataset.kind = card.type === 'question' ? 'question' : card.type;
+      cardEl.style.setProperty('--kind-tint',
+        isWild ? 'var(--wild)' :
+        state.currentLevel === 'spark' ? 'var(--spark)' :
+        state.currentLevel === 'connect' ? 'var(--connect)' :
+        state.currentLevel === 'closer' ? 'var(--closer)' : 'var(--card-ink-soft)');
+      cardKindLbl.textContent = kindLabelFor(card, state.currentLevel);
+      cardText.textContent = card.text;
+      if (overlay) {
+        overlayStrip.innerHTML = '<strong>OVERLAY</strong> — ' + escapeHtml(overlay.text);
+        overlayStrip.classList.remove('hidden');
+      } else {
+        overlayStrip.classList.add('hidden');
+      }
+      state.turn = state.turn === 1 ? 2 : 1;
+      turnLabel.textContent = 'Player ' + state.turn + ' reads';
+      saveState();
+      cardEl.classList.remove('exit');
+      cardEl.classList.add('enter');
+      requestAnimationFrame(() => { cardEl.classList.remove('enter'); animating = false; });
+    }, 220);
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // Hard Conversation
+  const stepCountEl = $('stepCount'), stepTitleEl = $('stepTitle'), stepBodyEl = $('stepBody');
+  const stepProgEl = $('stepProgress'), stepBackBtn = $('stepBack'), stepNextBtn = $('stepNext');
+
+  function renderStep() {
+    const steps = DECK.hardConversation;
+    const i = state.hardStep;
+    const step = steps[i];
+    stepCountEl.textContent = 'Step ' + (i + 1) + ' of ' + steps.length;
+    stepTitleEl.textContent = step.title;
+    stepBodyEl.textContent = step.body;
+    stepProgEl.innerHTML = steps.map((_, j) => '<span class="' + (j <= i ? 'done' : '') + '"></span>').join('');
+    stepBackBtn.disabled = (i === 0);
+    stepBackBtn.style.opacity = (i === 0) ? 0.35 : 1;
+    stepNextBtn.textContent = (i === steps.length - 1) ? 'Done' : 'Next step';
+    saveState();
+  }
+
+  const sheetBg = $('sheetBg'), sheet = $('sheet');
+  const openSheet = () => { sheetBg.classList.add('show'); sheet.classList.add('show'); };
+  const closeSheet = () => { sheetBg.classList.remove('show'); sheet.classList.remove('show'); };
+
+  document.querySelectorAll('.level-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const level = btn.dataset.level;
+      if (level === 'hard') { state.hardStep = 0; setView('hard'); renderStep(); }
+      else { goLevel(level); }
+    });
+  });
+
+  $('homeBtn').addEventListener('click', () => setView('home'));
+  $('nextBtn').addEventListener('click', drawAndRender);
+  cardEl.addEventListener('click', drawAndRender);
+  cardEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); drawAndRender(); }
+  });
+  $('turnBtn').addEventListener('click', e => {
+    e.stopPropagation();
+    state.turn = state.turn === 1 ? 2 : 1;
+    turnLabel.textContent = 'Player ' + state.turn + ' reads';
+    saveState();
+  });
+
+  $('menuBtn').addEventListener('click', openSheet);
+  sheetBg.addEventListener('click', closeSheet);
+  document.querySelectorAll('.sheet .menu-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const action = item.dataset.action;
+      closeSheet();
+      if (action === 'home')  setView('home');
+      if (action === 'hard')  { state.hardStep = 0; setView('hard'); renderStep(); }
+      if (action === 'about') setView('about');
+      if (action === 'reset') {
+        Object.keys(state.decks).forEach(k => { state.decks[k] = { order: [], cursor: 0 }; });
+        saveState();
+        if (state.currentLevel) drawAndRender();
+      }
+    });
+  });
+
+  stepNextBtn.addEventListener('click', () => {
+    if (state.hardStep < DECK.hardConversation.length - 1) { state.hardStep++; renderStep(); }
+    else { setView('home'); state.hardStep = 0; }
+  });
+  stepBackBtn.addEventListener('click', () => {
+    if (state.hardStep > 0) { state.hardStep--; renderStep(); }
+  });
+
+  // Boot
+  setView('home');
+  turnLabel.textContent = 'Player ' + state.turn + ' reads';
+})();
+</script>
+</body>
+</html>
